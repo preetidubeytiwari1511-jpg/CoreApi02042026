@@ -47,6 +47,7 @@ namespace CoreApi02042026.UserRepository
                     parameters)
                 .ToListAsync();
 
+
             return result.FirstOrDefault();
         }
         //public  async Task<AppUser?> ValidateUser(string username, string password)

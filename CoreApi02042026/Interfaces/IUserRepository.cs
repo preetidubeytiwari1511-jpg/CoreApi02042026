@@ -8,5 +8,6 @@ namespace CoreApi02042026.Interfaces
         Task<MstUser> GetUserById(int id);
         Task<MstUser?> ValidateUser(string username, string password);
         Task<int> AddUser(string name, string email, string mobile);   
+
     }
 }
