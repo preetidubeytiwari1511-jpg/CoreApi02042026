@@ -11,7 +11,6 @@ public partial class AppDbContext : DbContext
         : base(options)
     {
     }
-
     public virtual DbSet<CccodeSheet> CccodeSheets { get; set; }
 
     public virtual DbSet<MastDept> MastDepts { get; set; }

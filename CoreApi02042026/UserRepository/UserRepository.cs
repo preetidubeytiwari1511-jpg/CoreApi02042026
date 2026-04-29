@@ -1,6 +1,5 @@
 ﻿using CoreApi02042026.Data;
 using CoreApi02042026.Interfaces;
-using CoreApi02042026.Model;
 using CoreApi02042026.Models;
 using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;

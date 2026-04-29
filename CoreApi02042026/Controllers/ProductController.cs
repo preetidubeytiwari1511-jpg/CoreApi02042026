@@ -1,10 +1,12 @@
 ﻿using CoreApi02042026.Interfaces;
 using CoreApi02042026.Model;
 using CoreApi02042026.Models;
+using CoreApi02042026.UserRepository;
 using Humanizer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using System.Net;
 
 namespace CoreApi02042026.Controllers
 {
@@ -14,11 +16,14 @@ namespace CoreApi02042026.Controllers
     {
         private readonly JwtService _jwtService;
         private readonly IUserRepository _repo;
+        private readonly ISmsService _sms;
 
-        public ProductController(JwtService jwtService, IUserRepository repo)
+        public ProductController(JwtService jwtService, IUserRepository repo, ISmsService smsService)
         {
             _jwtService = jwtService;
             _repo = repo;
+            _sms = smsService;
+
         }
         private static List<Product> products = new()
         {
@@ -27,25 +32,29 @@ namespace CoreApi02042026.Controllers
             new Product { Id=3,Name="Product3",Description="Third Product"},
             new Product { Id=4,Name="Product4",Description="Fourth Product"}
         };
-        
+
         [HttpPost("login")]
         [AllowAnonymous]
         public async Task<IActionResult> Login([FromBody] LoginRequest request)
         {
-            // ✅ dto की जगह request करो
+        
             MstUser? user = await _repo.ValidateUser(request.Username, request.Password);
-
+            APIResponse otpResObj = new APIResponse();
             if (user == null)
                 return Unauthorized(new { Message = "Invalid username or password" });
 
-            // ✅ Token में Username और Role Pass करो
-            var token = _jwtService.GenerateToken(user.UserLoginId,user.UserLoginPass);
+            var token = _jwtService.GenerateToken(user.UserLoginId, user.UserLoginPass);
+            if (token != null)
+            {
 
+                otpResObj= await _sms.SendSmsAsync(user);
+               
+            }
             return Ok(new LoginResponse
             {
                 Token = token,
                 Username = user.UserName,
-                //Role = user.RoleName,
+                Role = otpResObj.msg,
                 Expiry = DateTime.UtcNow.AddMinutes(60)
             });
         }
@@ -101,8 +110,8 @@ namespace CoreApi02042026.Controllers
         [HttpGet("{id}")]
         public ActionResult<Product> GetBYID(int id)
         {
-            var result=products.FirstOrDefault(p=>p.Id==id);
-            return result is null ?NotFound(): Ok(result);
+            var result = products.FirstOrDefault(p => p.Id == id);
+            return result is null ? NotFound() : Ok(result);
         }
         [HttpGet("AllUser")]
         public async Task<IActionResult> GetAllUSER()
